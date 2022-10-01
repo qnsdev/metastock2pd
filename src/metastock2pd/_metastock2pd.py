@@ -192,7 +192,7 @@ def metastock_read(filename, fields = 7):
     return res
 
 
-def metastock_master(path):
+def metastock_master(path, encoding='ascii'):
     """
     returns a dataframe with a record per each file
 
@@ -234,16 +234,16 @@ def metastock_master(path):
             fields = struct.unpack("B", file_handle.read(1))[0]
             file_handle.seek(2, os.SEEK_CUR)
             name = file_handle.read(16)
-            name = paddedString(name, 'ascii')
+            name = paddedString(name, encoding=encoding)
     
             file_handle.seek(2, os.SEEK_CUR)
             first_date = float2date(fmsbin2ieee(file_handle.read(4)))
             last_date = float2date(fmsbin2ieee(file_handle.read(4)))
     
-            freq = struct.unpack("c", file_handle.read(1))[0].decode('ascii')
+            freq = struct.unpack("c", file_handle.read(1))[0].decode(encoding=encoding)
             file_handle.seek(2, os.SEEK_CUR)
             symbol = file_handle.read(14)
-            symbol = paddedString(symbol, 'ascii')
+            symbol = paddedString(symbol, encoding=encoding)
             rows.append(dict(filename = fname, 
                              file_number = file_number, 
                              length = record_length, 
@@ -256,7 +256,7 @@ def metastock_master(path):
     res = pd.DataFrame(rows).set_index('file_number')
     return res
 
-def metastock_emaster(path):
+def metastock_emaster(path, encoding='ascii'):
     """
     returns a dataframe with a record per each file
 
@@ -300,13 +300,13 @@ def metastock_emaster(path):
             fields = struct.unpack("B", file_handle.read(1))[0]
             file_handle.seek(4, os.SEEK_CUR)
             symbol = file_handle.read(14)
-            symbol = paddedString(symbol, 'ascii')
+            symbol = paddedString(symbol, encoding=encoding)
             file_handle.seek(7, os.SEEK_CUR)
             name = file_handle.read(16)
-            name = paddedString(name, 'ascii')
+            name = paddedString(name, encoding=encoding)
             
             file_handle.seek(12, os.SEEK_CUR)
-            freq = struct.unpack("c", file_handle.read(1))[0].decode('ascii')
+            freq = struct.unpack("c", file_handle.read(1))[0].decode(encoding=encoding)
             file_handle.seek(3, os.SEEK_CUR)
             first_date = float2date(fmsbin2ieee(file_handle.read(4)))
             file_handle.seek(4, os.SEEK_CUR)
@@ -322,7 +322,7 @@ def metastock_emaster(path):
     res = pd.DataFrame(rows).set_index('file_number')
     return res
 
-def metastock_xmaster(path):
+def metastock_xmaster(path, encoding='ascii'):
     """
     returns a dataframe with a record per each file
 
@@ -365,14 +365,14 @@ def metastock_xmaster(path):
             file_handle.seek( (i+1)*150 )
             file_handle.seek(1, os.SEEK_CUR)
             symbol = file_handle.read(14)
-            symbol = paddedString(symbol, 'ascii')
+            symbol = paddedString(symbol, encoding=encoding)
 
             file_handle.seek(1, os.SEEK_CUR)
             name = file_handle.read(45)
-            name = paddedString(name, 'ascii')
+            name = paddedString(name, encoding=encoding)
 
             file_handle.seek(1, os.SEEK_CUR)
-            freq = struct.unpack("c", file_handle.read(1))[0].decode('ascii')
+            freq = struct.unpack("c", file_handle.read(1))[0].decode(encoding=encoding)
             file_handle.seek(2, os.SEEK_CUR) # intraday timeframe?
             file_number = struct.unpack("H", file_handle.read(2))[0]
             fname = os.path.join(path, 'F%d.MWD' % file_number)
@@ -397,7 +397,7 @@ def metastock_xmaster(path):
     return res
 
 
-def metastock_read_master(path):
+def metastock_read_master(path, encoding='ascii'):
     """
     returns a dataframe with a record per each file
 
@@ -420,11 +420,11 @@ def metastock_read_master(path):
     """
     masters = []
     if os.path.isfile(os.path.join(path, 'master')):
-        masters.append(metastock_master(path))
+        masters.append(metastock_master(path, encoding=encoding))
     elif os.path.isfile(os.path.join(path, 'emaster')):
-        masters.append(metastock_emaster(path))
+        masters.append(metastock_emaster(path, encoding=encoding))
     if os.path.isfile(os.path.join(path, 'xmaster')):
-        masters.append(metastock_xmaster(path))
+        masters.append(metastock_xmaster(path, encoding=encoding))
     res = pd.concat(masters).sort_index()
     return res
     
